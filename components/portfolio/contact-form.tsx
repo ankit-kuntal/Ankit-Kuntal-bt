@@ -1,61 +1,46 @@
 "use client"
 
-import { useEffect, useState } from 'react'
+import { useState, FormEvent } from "react"
 import { motion } from "framer-motion"
-import { Mail, Github, Linkedin, Twitter, Check, Loader2 } from "lucide-react"
+import { Mail, Check, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent } from "@/components/ui/card"
-import { useActionState } from 'react'
-import { submitContactForm, type ContactFormState } from "@/app/actions/contact"
-import { createClient } from '@/lib/supabase/client'
-
-const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
-  github: Github,
-  linkedin: Linkedin,
-  twitter: Twitter,
-  x: Twitter,
-  instagram: () => <span className="text-xl">📸</span>,
-  youtube: () => <span className="text-xl">▶️</span>,
-}
-
-type SocialLink = {
-  platform: string
-  url: string
-  icon?: string | null
-}
-
-const initialState: ContactFormState = {}
+import { SocialLinks } from "@/components/portfolio/SocialLinks"
+import { submitContactForm, type ContactFormResult } from "@/app/actions/contact"
 
 export function ContactSection() {
-  const [links, setLinks] = useState<SocialLink[]>([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
+  const [success, setSuccess] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<Record<string,string[]>>({})
 
-  const [state, formAction, isPending] = useActionState(submitContactForm, initialState)
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setLoading(true)
+    setError(null)
+    setFieldErrors({})
 
-  useEffect(() => {
-    const supabase = createClient()
-    
-    async function fetchLinks() {
-      try {
-        const { data, error } = await supabase
-          .from('social_links')
-          .select('platform, url, icon')
-          .order('display_order', { ascending: true })
-          .limit(6)
+    // <- save the form element synchronously before any await
+    const form = e.currentTarget
+    const formData = new FormData(form)
 
-        if (error) throw error
-        setLinks(data || [])
-      } catch (err) {
-        console.error("Social links fetch error:", err)
-      } finally {
-        setLoading(false)
+    const result: ContactFormResult = await submitContactForm(formData)
+
+    if (result.success) {
+      setSuccess(true)
+      // check that the form element still exists in the document before resetting
+      if (typeof window !== "undefined" && document.contains(form)) {
+        form.reset()
       }
+    } else {
+      if (result.errors) setFieldErrors(result.errors)
+      else setError(result.error || "Something went wrong")
     }
 
-    fetchLinks()
-  }, [])
+    setLoading(false)
+  }
 
   return (
     <section id="contact" className="py-20 px-4 sm:px-6 lg:px-8">
@@ -69,6 +54,7 @@ export function ContactSection() {
           <Card className="bg-blue-500 border-0 overflow-hidden">
             <CardContent className="p-8 sm:p-12">
               <div className="grid lg:grid-cols-2 gap-10 items-center">
+
                 {/* Left - Info + Links */}
                 <div className="space-y-6">
                   <h2 className="text-3xl sm:text-4xl font-bold text-white leading-tight">
@@ -84,41 +70,12 @@ export function ContactSection() {
                       <span>hello@dev.com</span>
                     </a>
 
-                    <div className="flex gap-4 flex-wrap">
-                      {loading ? (
-                        <div className="text-white/70">Loading links...</div>
-                      ) : links.length > 0 ? (
-                        links.map((link) => {
-                          const lowerPlatform = link.platform.toLowerCase()
-                          const lowerIcon = link.icon?.toLowerCase()
-
-                          const IconComponent = 
-                            (lowerIcon && iconMap[lowerIcon]) ||
-                            iconMap[lowerPlatform] ||
-                            Github
-
-                          return (
-                            <a
-                              key={link.platform}
-                              href={link.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
-                              aria-label={link.platform}
-                            >
-                              <IconComponent className="w-5 h-5" />
-                            </a>
-                          )
-                        })
-                      ) : (
-                        <div className="text-white/70 text-sm">No social links added yet</div>
-                      )}
-                    </div>
+                    <SocialLinks />
                   </div>
                 </div>
 
                 {/* Right - Contact Form */}
-                {state.success ? (
+                {success ? (
                   <div className="bg-white/10 rounded-xl p-8 text-center space-y-4">
                     <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mx-auto">
                       <Check className="w-8 h-8 text-white" />
@@ -127,7 +84,7 @@ export function ContactSection() {
                     <p className="text-white/80">Thanks for reaching out. I'll get back to you soon.</p>
                   </div>
                 ) : (
-                  <form action={formAction} className="space-y-4">
+                  <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
                       <Input
                         name="name"
@@ -135,17 +92,37 @@ export function ContactSection() {
                         required
                         className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-white focus:ring-white/20"
                       />
-                      {state.errors?.name && (
-                        <p className="text-white/80 text-sm mt-1">{state.errors.name[0]}</p>
-                      )}
+                      {fieldErrors.name && <p className="text-white/80 text-sm mt-1">{fieldErrors.name[0]}</p>}
                     </div>
-                    {/* email and message fields same as your original */}
+
+                    <div>
+                      <Input
+                        name="email"
+                        type="email"
+                        placeholder="Email"
+                        required
+                        className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-white focus:ring-white/20"
+                      />
+                      {fieldErrors.email && <p className="text-white/80 text-sm mt-1">{fieldErrors.email[0]}</p>}
+                    </div>
+
+                    <div>
+                      <Textarea
+                        name="message"
+                        placeholder="Message"
+                        required
+                        className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-white focus:ring-white/20 resize-none"
+                        rows={5}
+                      />
+                      {fieldErrors.message && <p className="text-white/80 text-sm mt-1">{fieldErrors.message[0]}</p>}
+                    </div>
+
                     <Button
                       type="submit"
-                      disabled={isPending}
+                      disabled={loading}
                       className="w-full bg-white text-blue-500 hover:bg-white/90 rounded-full h-11 font-medium disabled:opacity-70"
                     >
-                      {isPending ? (
+                      {loading ? (
                         <>
                           <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                           Sending...
@@ -154,9 +131,8 @@ export function ContactSection() {
                         "Send Message"
                       )}
                     </Button>
-                    {state.error && (
-                      <p className="text-white/80 text-sm text-center">{state.error}</p>
-                    )}
+
+                    {error && <p className="text-white/80 text-center text-sm">{error}</p>}
                   </form>
                 )}
               </div>

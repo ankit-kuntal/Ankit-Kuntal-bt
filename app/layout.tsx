@@ -8,7 +8,7 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
   title: 'Dev - Full-Stack Developer Portfolio',
-  description: 'Full-stack developer building clean, premium, and high-performance digital experiences.',
+  description: '',
   icons: {
     icon: [
       {

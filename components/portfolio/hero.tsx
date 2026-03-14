@@ -3,6 +3,7 @@
 import { motion } from "framer-motion"
 import { ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { SocialLinks } from "@/components/portfolio/SocialLinks"
 
 export function Hero() {
   return (
@@ -65,6 +66,9 @@ export function Hero() {
                   Contact Me
                 </Button>
               </a>
+              <div className="flex gap-4 mt-4">
+                <SocialLinks />
+              </div>
             </motion.div>
           </motion.div>
 
