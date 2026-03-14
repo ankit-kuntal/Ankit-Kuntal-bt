@@ -55,8 +55,25 @@ export default async function HomePage() {
   ]);
 
   // Optional: error logging (production mein Sentry ya console.error kar sakte ho)
+  // if (projectsError || blogsError || aboutError || socialError) {
+  //   console.error('Supabase fetch error:', { projectsError, blogsError, aboutError, socialError });
+  // }
   if (projectsError || blogsError || aboutError || socialError) {
-    console.error('Supabase fetch error:', { projectsError, blogsError, aboutError, socialError });
+    // Detailed logging
+    const logError = (label: string, error: any) => {
+      if (!error) return;
+      console.error(`Error in ${label}:`);
+      if (error.message) console.error('Message:', error.message);
+      if (error.code) console.error('Code:', error.code);
+      if (error.details) console.error('Details:', error.details);
+      if (error.hint) console.error('Hint:', error.hint);
+      console.error('Full error object:', error);
+    }
+
+    logError('Projects', projectsError);
+    logError('Blogs', blogsError);
+    logError('About', aboutError);
+    logError('Social', socialError);
   }
 
   // Fallback to empty arrays/objects if no data or error
