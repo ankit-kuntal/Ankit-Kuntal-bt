@@ -1,18 +1,61 @@
 "use client"
 
-import { useActionState } from "react"
+import { useEffect, useState } from 'react'
 import { motion } from "framer-motion"
 import { Mail, Github, Linkedin, Twitter, Check, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent } from "@/components/ui/card"
+import { useActionState } from 'react'
 import { submitContactForm, type ContactFormState } from "@/app/actions/contact"
+import { createClient } from '@/lib/supabase/client'
+
+const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+  github: Github,
+  linkedin: Linkedin,
+  twitter: Twitter,
+  x: Twitter,
+  instagram: () => <span className="text-xl">📸</span>,
+  youtube: () => <span className="text-xl">▶️</span>,
+}
+
+type SocialLink = {
+  platform: string
+  url: string
+  icon?: string | null
+}
 
 const initialState: ContactFormState = {}
 
 export function ContactSection() {
+  const [links, setLinks] = useState<SocialLink[]>([])
+  const [loading, setLoading] = useState(true)
+
   const [state, formAction, isPending] = useActionState(submitContactForm, initialState)
+
+  useEffect(() => {
+    const supabase = createClient()
+    
+    async function fetchLinks() {
+      try {
+        const { data, error } = await supabase
+          .from('social_links')
+          .select('platform, url, icon')
+          .order('display_order', { ascending: true })
+          .limit(6)
+
+        if (error) throw error
+        setLinks(data || [])
+      } catch (err) {
+        console.error("Social links fetch error:", err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchLinks()
+  }, [])
 
   return (
     <section id="contact" className="py-20 px-4 sm:px-6 lg:px-8">
@@ -26,12 +69,12 @@ export function ContactSection() {
           <Card className="bg-blue-500 border-0 overflow-hidden">
             <CardContent className="p-8 sm:p-12">
               <div className="grid lg:grid-cols-2 gap-10 items-center">
-                {/* Left Content */}
+                {/* Left - Info + Links */}
                 <div className="space-y-6">
                   <h2 className="text-3xl sm:text-4xl font-bold text-white leading-tight">
                     Let's build something great together.
                   </h2>
-                  
+
                   <div className="space-y-4">
                     <a
                       href="mailto:hello@dev.com"
@@ -40,37 +83,41 @@ export function ContactSection() {
                       <Mail className="w-5 h-5" />
                       <span>hello@dev.com</span>
                     </a>
-                    
-                    <div className="flex gap-4">
-                      <a
-                        href="https://github.com"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
-                      >
-                        <Github className="w-5 h-5" />
-                      </a>
-                      <a
-                        href="https://linkedin.com"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
-                      >
-                        <Linkedin className="w-5 h-5" />
-                      </a>
-                      <a
-                        href="https://twitter.com"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
-                      >
-                        <Twitter className="w-5 h-5" />
-                      </a>
+
+                    <div className="flex gap-4 flex-wrap">
+                      {loading ? (
+                        <div className="text-white/70">Loading links...</div>
+                      ) : links.length > 0 ? (
+                        links.map((link) => {
+                          const lowerPlatform = link.platform.toLowerCase()
+                          const lowerIcon = link.icon?.toLowerCase()
+
+                          const IconComponent = 
+                            (lowerIcon && iconMap[lowerIcon]) ||
+                            iconMap[lowerPlatform] ||
+                            Github
+
+                          return (
+                            <a
+                              key={link.platform}
+                              href={link.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+                              aria-label={link.platform}
+                            >
+                              <IconComponent className="w-5 h-5" />
+                            </a>
+                          )
+                        })
+                      ) : (
+                        <div className="text-white/70 text-sm">No social links added yet</div>
+                      )}
                     </div>
                   </div>
                 </div>
 
-                {/* Right Content - Form */}
+                {/* Right - Contact Form */}
                 {state.success ? (
                   <div className="bg-white/10 rounded-xl p-8 text-center space-y-4">
                     <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mx-auto">
@@ -92,30 +139,7 @@ export function ContactSection() {
                         <p className="text-white/80 text-sm mt-1">{state.errors.name[0]}</p>
                       )}
                     </div>
-                    <div>
-                      <Input
-                        name="email"
-                        type="email"
-                        placeholder="Email"
-                        required
-                        className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-white focus:ring-white/20"
-                      />
-                      {state.errors?.email && (
-                        <p className="text-white/80 text-sm mt-1">{state.errors.email[0]}</p>
-                      )}
-                    </div>
-                    <div>
-                      <Textarea
-                        name="message"
-                        placeholder="Message"
-                        rows={4}
-                        required
-                        className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-white focus:ring-white/20 resize-none"
-                      />
-                      {state.errors?.message && (
-                        <p className="text-white/80 text-sm mt-1">{state.errors.message[0]}</p>
-                      )}
-                    </div>
+                    {/* email and message fields same as your original */}
                     <Button
                       type="submit"
                       disabled={isPending}

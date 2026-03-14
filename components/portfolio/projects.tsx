@@ -11,7 +11,7 @@ export interface Project {
   image: string
   live_url?: string
   github_url?: string
-  tags: string[]
+  tags?: string[] | string // Supabase से कभी string आ सकता है
 }
 
 interface ProjectsProps {
@@ -54,7 +54,7 @@ export function Projects({ projects }: ProjectsProps) {
                   <p className="text-muted-foreground text-sm leading-relaxed">{project.description}</p>
                   
                   <div className="flex flex-wrap gap-2">
-                    {project.tags.map((tag) => (
+                    {(Array.isArray(project.tags) ? project.tags : []).map((tag) => (
                       <span
                         key={tag}
                         className="px-2.5 py-0.5 text-xs font-medium bg-muted text-muted-foreground rounded-full"
