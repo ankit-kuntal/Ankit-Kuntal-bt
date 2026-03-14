@@ -31,11 +31,11 @@ type Project = {
   title: string
   description: string
   image_url: string | null
-  project_url: string | null
+  live_url: string | null
   github_url: string | null
   category: string
   technologies: string[]
-  featured: boolean
+  published: boolean
   display_order: number
   created_at: string
 }
@@ -64,11 +64,7 @@ const defaultFormData: ProjectFormData = {
   display_order: 0,
 }
 
-export function ProjectsTable({
-  initialProjects,
-}: {
-  initialProjects: Project[]
-}) {
+export function ProjectsTable({ initialProjects }: { initialProjects: Project[] }) {
   const [projects, setProjects] = useState<Project[]>(initialProjects)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
@@ -90,11 +86,11 @@ export function ProjectsTable({
       title: project.title,
       description: project.description,
       image_url: project.image_url || '',
-      project_url: project.project_url || '',
+      project_url: project.live_url || '',
       github_url: project.github_url || '',
       category: project.category,
       technologies: project.technologies.join(', '),
-      featured: project.featured,
+      featured: project.published,
       display_order: project.display_order,
     })
     setIsDialogOpen(true)
@@ -114,11 +110,14 @@ export function ProjectsTable({
       title: formData.title,
       description: formData.description,
       image_url: formData.image_url || null,
-      project_url: formData.project_url || null,
+      live_url: formData.project_url || null,
       github_url: formData.github_url || null,
       category: formData.category,
-      technologies: formData.technologies.split(',').map((t) => t.trim()).filter(Boolean),
-      featured: formData.featured,
+      technologies: formData.technologies
+        .split(',')
+        .map((t) => t.trim())
+        .filter(Boolean),
+      published: formData.featured,
       display_order: formData.display_order,
     }
 
@@ -132,9 +131,7 @@ export function ProjectsTable({
           .single()
 
         if (error) throw error
-        setProjects(
-          projects.map((p) => (p.id === editingProject.id ? data : p))
-        )
+        setProjects(projects.map((p) => (p.id === editingProject.id ? data : p)))
       } else {
         const { data, error } = await supabase
           .from('projects')
@@ -179,10 +176,9 @@ export function ProjectsTable({
 
   return (
     <>
-      <div className="flex justify-end">
+      <div className="flex justify-end mb-4">
         <Button onClick={openCreateDialog}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Project
+          <Plus className="mr-2 h-4 w-4" /> Add Project
         </Button>
       </div>
 
@@ -202,28 +198,20 @@ export function ProjectsTable({
           <TableBody>
             {projects.length === 0 ? (
               <TableRow>
-                <TableCell
-                  colSpan={7}
-                  className="h-24 text-center text-muted-foreground"
-                >
+                <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
                   No projects yet. Add your first project to get started.
                 </TableCell>
               </TableRow>
             ) : (
               projects.map((project) => (
                 <TableRow key={project.id}>
-                  <TableCell className="font-mono text-muted-foreground">
-                    {project.display_order}
-                  </TableCell>
+                  <TableCell className="font-mono text-muted-foreground">{project.display_order}</TableCell>
                   <TableCell className="font-medium">{project.title}</TableCell>
                   <TableCell>{project.category}</TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-1">
                       {project.technologies.slice(0, 3).map((tech) => (
-                        <span
-                          key={tech}
-                          className="inline-flex items-center rounded-full bg-secondary px-2 py-0.5 text-xs"
-                        >
+                        <span key={tech} className="inline-flex items-center rounded-full bg-secondary px-2 py-0.5 text-xs">
                           {tech}
                         </span>
                       ))}
@@ -235,7 +223,7 @@ export function ProjectsTable({
                     </div>
                   </TableCell>
                   <TableCell>
-                    {project.featured ? (
+                    {project.published ? (
                       <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary">
                         Featured
                       </span>
@@ -245,23 +233,13 @@ export function ProjectsTable({
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">
-                      {project.project_url && (
-                        <a
-                          href={project.project_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="p-1 hover:text-primary"
-                        >
+                      {project.live_url && (
+                        <a href={project.live_url} target="_blank" rel="noopener noreferrer" className="p-1 hover:text-primary">
                           <ExternalLink className="h-4 w-4" />
                         </a>
                       )}
                       {project.github_url && (
-                        <a
-                          href={project.github_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="p-1 hover:text-primary"
-                        >
+                        <a href={project.github_url} target="_blank" rel="noopener noreferrer" className="p-1 hover:text-primary">
                           <Github className="h-4 w-4" />
                         </a>
                       )}
@@ -269,18 +247,10 @@ export function ProjectsTable({
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        onClick={() => openEditDialog(project)}
-                      >
+                      <Button variant="ghost" size="icon-sm" onClick={() => openEditDialog(project)}>
                         <Pencil className="h-4 w-4" />
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        onClick={() => openDeleteDialog(project)}
-                      >
+                      <Button variant="ghost" size="icon-sm" onClick={() => openDeleteDialog(project)}>
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
                     </div>
@@ -295,13 +265,9 @@ export function ProjectsTable({
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-xl">
           <DialogHeader>
-            <DialogTitle>
-              {editingProject ? 'Edit Project' : 'Add Project'}
-            </DialogTitle>
+            <DialogTitle>{editingProject ? 'Edit Project' : 'Add Project'}</DialogTitle>
             <DialogDescription>
-              {editingProject
-                ? 'Update your project details'
-                : 'Add a new project to your portfolio'}
+              {editingProject ? 'Update your project details' : 'Add a new project to your portfolio'}
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -311,9 +277,7 @@ export function ProjectsTable({
                 <Input
                   id="title"
                   value={formData.title}
-                  onChange={(e) =>
-                    setFormData({ ...formData, title: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   required
                 />
               </div>
@@ -322,9 +286,7 @@ export function ProjectsTable({
                 <Input
                   id="category"
                   value={formData.category}
-                  onChange={(e) =>
-                    setFormData({ ...formData, category: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                   placeholder="e.g., Web App, Mobile App"
                   required
                 />
@@ -335,9 +297,7 @@ export function ProjectsTable({
               <Textarea
                 id="description"
                 value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 required
               />
             </div>
@@ -346,9 +306,7 @@ export function ProjectsTable({
               <Input
                 id="technologies"
                 value={formData.technologies}
-                onChange={(e) =>
-                  setFormData({ ...formData, technologies: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, technologies: e.target.value })}
                 placeholder="React, TypeScript, Tailwind (comma separated)"
               />
             </div>
@@ -359,9 +317,7 @@ export function ProjectsTable({
                   id="project_url"
                   type="url"
                   value={formData.project_url}
-                  onChange={(e) =>
-                    setFormData({ ...formData, project_url: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, project_url: e.target.value })}
                   placeholder="https://..."
                 />
               </div>
@@ -371,9 +327,7 @@ export function ProjectsTable({
                   id="github_url"
                   type="url"
                   value={formData.github_url}
-                  onChange={(e) =>
-                    setFormData({ ...formData, github_url: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, github_url: e.target.value })}
                   placeholder="https://github.com/..."
                 />
               </div>
@@ -384,9 +338,7 @@ export function ProjectsTable({
                 id="image_url"
                 type="url"
                 value={formData.image_url}
-                onChange={(e) =>
-                  setFormData({ ...formData, image_url: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
                 placeholder="https://..."
               />
             </div>
@@ -398,10 +350,7 @@ export function ProjectsTable({
                   type="number"
                   value={formData.display_order}
                   onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      display_order: parseInt(e.target.value) || 0,
-                    })
+                    setFormData({ ...formData, display_order: parseInt(e.target.value) || 0 })
                   }
                 />
               </div>
@@ -409,27 +358,17 @@ export function ProjectsTable({
                 <Switch
                   id="featured"
                   checked={formData.featured}
-                  onCheckedChange={(checked) =>
-                    setFormData({ ...formData, featured: checked })
-                  }
+                  onCheckedChange={(checked) => setFormData({ ...formData, featured: checked })}
                 />
                 <Label htmlFor="featured">Featured on homepage</Label>
               </div>
             </div>
             <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setIsDialogOpen(false)}
-              >
+              <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                 Cancel
               </Button>
               <Button type="submit" disabled={isLoading}>
-                {isLoading
-                  ? 'Saving...'
-                  : editingProject
-                    ? 'Update Project'
-                    : 'Add Project'}
+                {isLoading ? 'Saving...' : editingProject ? 'Update Project' : 'Add Project'}
               </Button>
             </DialogFooter>
           </form>
@@ -441,22 +380,14 @@ export function ProjectsTable({
           <DialogHeader>
             <DialogTitle>Delete Project</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete &quot;{deletingProject?.title}&quot;?
-              This action cannot be undone.
+              Are you sure you want to delete &quot;{deletingProject?.title}&quot;? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsDeleteDialogOpen(false)}
-            >
+            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
               Cancel
             </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDelete}
-              disabled={isLoading}
-            >
+            <Button variant="destructive" onClick={handleDelete} disabled={isLoading}>
               {isLoading ? 'Deleting...' : 'Delete'}
             </Button>
           </DialogFooter>
