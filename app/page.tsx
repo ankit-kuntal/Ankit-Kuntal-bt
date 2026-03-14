@@ -32,12 +32,14 @@ export default async function HomePage() {
     supabase
       .from('projects')
       .select('*')
+      .eq('published', true)
       .order('created_at', { ascending: false })
       .limit(6), // recent ya featured projects
 
     supabase
       .from('blogs')
       .select('*')
+      .eq('published', true)
       .order('date', { ascending: false })
       .limit(4),
 
