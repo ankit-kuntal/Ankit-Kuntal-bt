@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { Moon, Sun, Menu, X } from "lucide-react"
+import { Moon, Sun, Menu, X, Shield } from "lucide-react"
 import { useTheme } from "next-themes"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 
 const navLinks = [
@@ -32,10 +33,11 @@ export function Navbar() {
     >
       <nav className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
+
           {/* Logo */}
-          <a href="#" className="text-xl font-bold text-foreground">
+          <Link href="/" className="text-xl font-bold text-foreground">
             Dev
-          </a>
+          </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
@@ -50,8 +52,17 @@ export function Navbar() {
             ))}
           </div>
 
-          {/* Right side */}
+          {/* Right Side */}
           <div className="flex items-center gap-3">
+
+            {/* Admin Panel Button */}
+            <Link href="/admin">
+              <Button variant="ghost" size="icon" className="rounded-full">
+                <Shield className="h-5 w-5" />
+                <span className="sr-only">Admin Panel</span>
+              </Button>
+            </Link>
+
             {/* Theme Toggle */}
             {mounted && (
               <Button
@@ -83,8 +94,13 @@ export function Navbar() {
               className="md:hidden"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
-              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              {mobileMenuOpen ? (
+                <X className="h-5 w-5" />
+              ) : (
+                <Menu className="h-5 w-5" />
+              )}
             </Button>
+
           </div>
         </div>
 
@@ -107,6 +123,7 @@ export function Navbar() {
                   {link.name}
                 </a>
               ))}
+
               <a href="#contact" onClick={() => setMobileMenuOpen(false)}>
                 <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white rounded-full mt-2">
                   Hire Me
