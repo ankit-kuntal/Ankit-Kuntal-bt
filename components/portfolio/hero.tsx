@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 export function Hero() {
   return (
     <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left Content */}
           <motion.div
@@ -44,7 +44,7 @@ export function Hero() {
               transition={{ delay: 0.4 }}
               className="text-lg text-muted-foreground max-w-xl leading-relaxed"
             >
-              Full-stack developer building clean, premium, and high-performance digital experiences. Inspired by the minimalism of Vercel and Apple.
+              full-stack developer passionate about crafting clean, premium, and high-performance digital experiences that blend creativity with code. I thrive on building solutions that are not just functional, but also elegant and impactful.
             </motion.p>
 
             {/* Buttons */}
@@ -82,25 +82,25 @@ export function Hero() {
                 <svg viewBox="0 0 200 200" className="w-full h-full">
                   {/* Background circle */}
                   <circle cx="100" cy="100" r="95" className="fill-blue-100 dark:fill-blue-900/50" />
-                  
+
                   {/* Hair */}
                   <path d="M50 85 Q50 40 100 35 Q150 40 150 85 Q150 95 145 100 L145 75 Q140 55 100 50 Q60 55 55 75 L55 100 Q50 95 50 85" className="fill-gray-800 dark:fill-gray-200" />
-                  
+
                   {/* Face */}
                   <ellipse cx="100" cy="110" rx="45" ry="55" className="fill-amber-100 dark:fill-amber-200" />
-                  
+
                   {/* Glasses frame */}
                   <rect x="60" y="95" width="30" height="25" rx="5" className="fill-none stroke-gray-700 dark:stroke-gray-300" strokeWidth="3" />
                   <rect x="110" y="95" width="30" height="25" rx="5" className="fill-none stroke-gray-700 dark:stroke-gray-300" strokeWidth="3" />
                   <line x1="90" y1="107" x2="110" y2="107" className="stroke-gray-700 dark:stroke-gray-300" strokeWidth="3" />
-                  
+
                   {/* Eyes */}
                   <circle cx="75" cy="107" r="5" className="fill-gray-800 dark:fill-gray-200" />
                   <circle cx="125" cy="107" r="5" className="fill-gray-800 dark:fill-gray-200" />
-                  
+
                   {/* Smile */}
                   <path d="M85 135 Q100 150 115 135" className="fill-none stroke-gray-700 dark:stroke-gray-300" strokeWidth="3" strokeLinecap="round" />
-                  
+
                   {/* Shirt collar */}
                   <path d="M55 165 L100 180 L145 165 L145 200 L55 200 Z" className="fill-blue-500" />
                   <path d="M85 165 L100 180 L115 165" className="fill-none stroke-white" strokeWidth="2" />

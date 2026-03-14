@@ -38,7 +38,7 @@ export function Writing({ blogs, emptyMessage = "No posts yet. Check back soon!"
 
   return (
     <section id="blog" className="py-20 px-4 sm:px-6 lg:px-8 bg-muted/30">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}

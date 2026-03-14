@@ -9,7 +9,7 @@ export function Footer() {
             © {new Date().getFullYear()} Dev. All rights reserved.
           </p>
           <p className="text-sm text-muted-foreground">
-            Built with Next.js, Tailwind CSS & Framer Motion
+            {/* add policy links */}
           </p>
         </div>
       </div>
