@@ -51,11 +51,6 @@ const navItems = [
     icon: FileText,
   },
   {
-    title: 'Settings',
-    href: '/admin/settings',
-    icon: Settings,
-  },
-  {
     title: 'Links Manager',
     href: '/admin/links-manage',
     icon: FileText,

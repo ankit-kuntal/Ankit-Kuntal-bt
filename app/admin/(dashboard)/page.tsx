@@ -50,13 +50,6 @@ export default async function AdminDashboardPage() {
       icon: TrendingUp,
       href: '/admin/projects',
     },
-    {
-      title: 'Settings',
-      value: 'Profile',
-      description: 'Update Bio & Avatar',
-      icon: Settings,
-      href: '/admin/settings',
-    },
   ]
 
   return (

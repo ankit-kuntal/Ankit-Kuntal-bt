@@ -1,3 +1,4 @@
+// components/portfolio/contact-section.tsx
 "use client"
 
 import { useState, FormEvent } from "react"
@@ -10,12 +11,13 @@ import { Card, CardContent } from "@/components/ui/card"
 import { SocialLinks } from "@/components/portfolio/SocialLinks"
 import { submitContactForm, type ContactFormResult } from "@/app/actions/contact"
 
-// 1. Interface add karein taaki links as a prop aa sakein
+// Props include resumeUrl
 interface ContactSectionProps {
-  links?: any[];
+  links?: any[]
+  resumeUrl?: string | null
 }
 
-export function ContactSection({ links = [] }: ContactSectionProps) { // 2. Props receive karein
+export function ContactSection({ links = [], resumeUrl }: ContactSectionProps) {
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -57,20 +59,27 @@ export function ContactSection({ links = [] }: ContactSectionProps) { // 2. Prop
           <Card className="bg-blue-500 border-0 overflow-hidden">
             <CardContent className="p-8 sm:p-12">
               <div className="grid lg:grid-cols-2 gap-10 items-center">
-
+                
                 {/* Left - Info + Links */}
                 <div className="space-y-6">
                   <h2 className="text-3xl sm:text-4xl font-bold text-white leading-tight">
                     Let's build something great together.
                   </h2>
+
                   <div className="flex gap-3 pt-2 flex-wrap">
-                    <a
-                      href="/resume.pdf"
-                      target="_blank"
-                      className="bg-white text-blue-500 px-4 py-2 rounded-full text-sm font-medium hover:bg-white/90 transition"
-                    >
-                      View Resume
-                    </a>
+                    {/* Resume Button */}
+                    {resumeUrl && (
+                      <a
+                        href={resumeUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-white text-blue-500 px-4 py-2 rounded-full text-sm font-medium hover:bg-white/90 transition"
+                      >
+                        View Resume
+                      </a>
+                    )}
+
+                    {/* Certificates Button */}
                     <a
                       href="/certificates"
                       className="border border-white text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-white/10 transition"
@@ -88,7 +97,7 @@ export function ContactSection({ links = [] }: ContactSectionProps) { // 2. Prop
                       <span>ankitkuntal904@gmail.com</span>
                     </a>
 
-                    {/* 3. SocialLinks ko yahan links pass karein */}
+                    {/* Social Links */}
                     <SocialLinks links={links} />
                   </div>
                 </div>
