@@ -36,6 +36,11 @@ const navItems = [
     icon: LayoutDashboard,
   },
   {
+    title: 'About',
+    href: '/admin/about',
+    icon: FileText,
+  },
+  {
     title: 'Projects',
     href: '/admin/projects',
     icon: FolderKanban,
