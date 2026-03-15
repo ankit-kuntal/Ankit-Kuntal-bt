@@ -56,8 +56,16 @@ export function Projects({ projects }: ProjectsProps) {
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.3 }}
           >
-            <Card className="group bg-card border-border overflow-hidden shadow-md">
-              <div className="aspect-video relative overflow-hidden bg-muted">
+            <article
+              itemScope
+              itemType="https://schema.org/SoftwareSourceCode"
+              className="group"
+            >
+              <Card className="bg-card border-border overflow-hidden shadow-md">
+                <meta itemProp="name" content={project.title} />
+                <meta itemProp="description" content={project.description} />
+                <meta itemProp="url" content={project.live_url || ''} />
+                <div className="aspect-video relative overflow-hidden bg-muted">
                 {project.image_url ? (
                   <img
                     // Key property yahan bhi add kar di hai double safety ke liye
@@ -108,7 +116,8 @@ export function Projects({ projects }: ProjectsProps) {
                 </div>
               </CardContent>
             </Card>
-          </motion.div>
+            </article>
+            </motion.div>
         </AnimatePresence>
 
         {/* Navigation Buttons */}

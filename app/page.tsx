@@ -1,6 +1,24 @@
-// app/page.tsx – Fixed & Improved Version
-
+// app/page.tsx
+import { Metadata } from 'next'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
+
+export const metadata: Metadata = {
+  title: 'Dev | Full-Stack Developer Portfolio',
+  description: 'Discover Dev’s software products, projects, blog and contact info.',
+  keywords: ['Dev', 'full-stack developer', 'portfolio', 'web developer', 'React', 'Next.js', 'Supabase'],
+  openGraph: {
+    title: 'Dev | Full-Stack Developer Portfolio',
+    description: 'Discover Dev’s software products, projects, blog and contact info.',
+    url: 'https://ankit-kuntal-bt.vercel.app/',
+    siteName: 'Dev Portfolio',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Dev | Full-Stack Developer Portfolio',
+    description: 'Discover Dev’s software products, projects, blog and contact info.',
+  },
+}
 
 import { Navbar } from "@/components/portfolio/navbar"
 import { Hero } from "@/components/portfolio/hero"
@@ -24,7 +42,7 @@ export default async function HomePage() {
   try {
     const results = await Promise.all([
       supabase.from('projects').select('*').eq('published', true).order('display_order'),
-      supabase.from('blogs').select('*').eq('published', true).order('date', { ascending: false }),
+      supabase.from('blogs').select('*').eq('published', true).order('published_at', { ascending: false }),
       supabase.from('about').select('*').maybeSingle(),
       supabase.from('social_links').select('*').order('display_order', { ascending: true }),
     ])
@@ -36,35 +54,50 @@ export default async function HomePage() {
 
   } catch (error) {
     console.error('HomePage data fetch error:', error)
-    // Optional: error boundary ya fallback UI dikha sakte ho
   }
 
   const safeProjects = projects
   const safeBlogs = blogs
   const safeSocial = socialLinks
-
-  // Resume URL explicitly nikaal rahe hain
   const resumeUrl = aboutData?.resume_url ?? null
 
   return (
     <main className="min-h-screen bg-background">
       <Navbar />
       <Hero links={safeSocial} />
-      
-      {/* About ko safe fallback de rahe hain */}
       <About about={aboutData ?? { name: '', bio: '', image: '', resume_url: null }} />
-      
       <TechStack />
       <Projects projects={safeProjects} />
       <Writing blogs={safeBlogs} />
-      
-      {/* Yahan resumeUrl pass kar diya – button ab dikhna chahiye agar DB mein value hai */}
-      <ContactSection 
-        resumeUrl={resumeUrl}
-        links={safeSocial} 
-      />
-      
+      <ContactSection resumeUrl={resumeUrl} links={safeSocial} />
       <Footer />
+
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'Person',
+            name: 'Ankit Kuntal',
+            url: 'https://your-domain.com',
+            jobTitle: 'Full-Stack Developer',
+            description: 'Full-stack developer creating web applications with Next.js, Supabase and React.',
+            sameAs: safeSocial
+              .map((link) => link.url)
+              .filter((url) => typeof url === 'string' && url.trim().length > 0),
+            knowsAbout: ['Next.js', 'React', 'Node.js', 'Supabase', 'TypeScript', 'Tailwind CSS'],
+            hasProduct: safeProjects
+              .filter((project) => project.title)
+              .map((project) => ({
+              '@type': 'Product',
+              name: project.title,
+              description: project.description,
+              url: project.live_url || 'https://your-domain.com',
+              image: project.image_url || 'https://your-domain.com/default-project-image.jpg',
+            })),
+          }),
+        }}
+      />
     </main>
   )
 }

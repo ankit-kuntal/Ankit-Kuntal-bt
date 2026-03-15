@@ -16,8 +16,7 @@ export async function middleware(request: NextRequest) {
         },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value, options }) => {
-            // Object style mein set karo (Next.js latest API)
-            request.cookies.set({ name, value, ...options })
+            // For Next middleware we should set cookies on response (immutable request object in some versions)
             supabaseResponse.cookies.set({ name, value, ...options })
           })
         },
