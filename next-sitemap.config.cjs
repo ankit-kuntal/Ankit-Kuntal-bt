@@ -1,8 +1,13 @@
 /** @type {import('next-sitemap').IConfig} */
 module.exports = {
-  siteUrl: 'https://ankit-kuntal-bt.vercel.app', // tumhara live URL
-  generateRobotsTxt: true,                       // robots.txt bhi banega
+  siteUrl: 'https://ankit-kuntal-bt.vercel.app',
+  generateRobotsTxt: true,
   changefreq: 'weekly',
   priority: 0.7,
-  sitemapSize: 5000, // optional, agar bahut saare pages hain
+  additionalPaths: async () => [
+    '/blogs/blog-slug-1',
+    '/blogs/blog-slug-2',
+    '/projects/project-1',
+    '/projects/project-2',
+  ],
 }
