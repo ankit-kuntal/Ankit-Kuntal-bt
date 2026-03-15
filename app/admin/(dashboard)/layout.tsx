@@ -50,6 +50,11 @@ const navItems = [
     href: '/admin/settings',
     icon: Settings,
   },
+  {
+    title: 'Links Manager',
+    href: '/admin/links-manage',
+    icon: FileText,
+  },
 ]
 
 export default function AdminDashboardLayout({

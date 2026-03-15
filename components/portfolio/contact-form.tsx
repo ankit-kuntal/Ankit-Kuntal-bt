@@ -10,11 +10,16 @@ import { Card, CardContent } from "@/components/ui/card"
 import { SocialLinks } from "@/components/portfolio/SocialLinks"
 import { submitContactForm, type ContactFormResult } from "@/app/actions/contact"
 
-export function ContactSection() {
+// 1. Interface add karein taaki links as a prop aa sakein
+interface ContactSectionProps {
+  links?: any[];
+}
+
+export function ContactSection({ links = [] }: ContactSectionProps) { // 2. Props receive karein
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [fieldErrors, setFieldErrors] = useState<Record<string,string[]>>({})
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({})
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -22,7 +27,6 @@ export function ContactSection() {
     setError(null)
     setFieldErrors({})
 
-    // <- save the form element synchronously before any await
     const form = e.currentTarget
     const formData = new FormData(form)
 
@@ -30,7 +34,6 @@ export function ContactSection() {
 
     if (result.success) {
       setSuccess(true)
-      // check that the form element still exists in the document before resetting
       if (typeof window !== "undefined" && document.contains(form)) {
         form.reset()
       }
@@ -60,17 +63,33 @@ export function ContactSection() {
                   <h2 className="text-3xl sm:text-4xl font-bold text-white leading-tight">
                     Let's build something great together.
                   </h2>
+                  <div className="flex gap-3 pt-2 flex-wrap">
+                    <a
+                      href="/resume.pdf"
+                      target="_blank"
+                      className="bg-white text-blue-500 px-4 py-2 rounded-full text-sm font-medium hover:bg-white/90 transition"
+                    >
+                      View Resume
+                    </a>
+                    <a
+                      href="/certificates"
+                      className="border border-white text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-white/10 transition"
+                    >
+                      Certificates
+                    </a>
+                  </div>
 
                   <div className="space-y-4">
                     <a
-                      href="mailto:hello@dev.com"
+                      href="mailto:ankitkuntal904@gmail.com"
                       className="flex items-center gap-3 text-white/90 hover:text-white transition-colors"
                     >
                       <Mail className="w-5 h-5" />
                       <span>ankitkuntal904@gmail.com</span>
                     </a>
 
-                    <SocialLinks />
+                    {/* 3. SocialLinks ko yahan links pass karein */}
+                    <SocialLinks links={links} />
                   </div>
                 </div>
 

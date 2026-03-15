@@ -1,5 +1,5 @@
 import { createSupabaseServerClient } from '@/lib/supabase/server'
-import { SettingsForm } from './settings-form'
+import { ProfileForm } from './settings-form'
 
 export default async function SettingsPage() {
   const supabase = await createSupabaseServerClient()
@@ -17,10 +17,6 @@ export default async function SettingsPage() {
           Manage your portfolio profile and social links
         </p>
       </div>
-      <SettingsForm 
-        initialAbout={aboutResult.data} 
-        initialSocialLinks={socialLinksResult.data || []} 
-      />
     </div>
   )
 }

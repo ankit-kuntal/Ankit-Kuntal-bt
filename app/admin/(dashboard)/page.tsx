@@ -1,70 +1,85 @@
+// app/admin/page.tsx
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { FolderKanban, FileText, Users, TrendingUp } from 'lucide-react'
+import { FolderKanban, FileText, Share2, TrendingUp, Settings } from 'lucide-react'
 import Link from 'next/link'
 
 export default async function AdminDashboardPage() {
   const supabase = await createSupabaseServerClient()
 
-  const [projectsResult, blogsResult] = await Promise.all([
+  // Data fetching for all sections
+  const [projectsResult, blogsResult, socialResult] = await Promise.all([
     supabase.from('projects').select('*', { count: 'exact' }),
     supabase.from('blogs').select('*', { count: 'exact' }),
+    supabase.from('social_links').select('*', { count: 'exact' }),
   ])
 
   const projectsCount = projectsResult.count || 0
   const blogsCount = blogsResult.count || 0
-  const featuredProjects = projectsResult.data?.filter((p) => p.featured)?.length || 0
+  const socialCount = socialResult.count || 0
+  
+  const featuredProjects = projectsResult.data?.filter((p) => p.published)?.length || 0
   const publishedBlogs = blogsResult.data?.filter((b) => b.published)?.length || 0
 
   const stats = [
     {
       title: 'Total Projects',
       value: projectsCount,
-      description: `${featuredProjects} featured`,
+      description: `${featuredProjects} live projects`,
       icon: FolderKanban,
       href: '/admin/projects',
     },
     {
       title: 'Blog Posts',
       value: blogsCount,
-      description: `${publishedBlogs} published`,
+      description: `${publishedBlogs} published articles`,
       icon: FileText,
       href: '/admin/blogs',
     },
     {
-      title: 'Featured Items',
-      value: featuredProjects,
-      description: 'Projects on homepage',
+      title: 'Social Presence',
+      value: socialCount,
+      description: 'Active social links',
+      icon: Share2,
+      href: '/admin/links-manage', // New Link Manager route
+    },
+    {
+      title: 'Performance',
+      value: featuredProjects + publishedBlogs,
+      description: 'Total live items',
       icon: TrendingUp,
       href: '/admin/projects',
     },
     {
-      title: 'Profile Settings',
-      value: '1',
-      description: 'About & social links',
-      icon: Users,
+      title: 'Settings',
+      value: 'Profile',
+      description: 'Update Bio & Avatar',
+      icon: Settings,
       href: '/admin/settings',
     },
   ]
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight">Dashboard</h2>
-        <p className="text-muted-foreground">
-          Welcome to your portfolio admin panel
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">Dashboard</h2>
+          <p className="text-muted-foreground">
+            Overview of your portfolio and content management
+          </p>
+        </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      {/* Stats Grid */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
         {stats.map((stat) => (
           <Link key={stat.title} href={stat.href}>
-            <Card className="transition-colors hover:bg-muted/50">
+            <Card className="transition-all hover:shadow-md hover:bg-muted/30">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
                   {stat.title}
                 </CardTitle>
-                <stat.icon className="h-4 w-4 text-muted-foreground" />
+                <stat.icon className="h-4 w-4 text-blue-500" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stat.value}</div>
@@ -78,76 +93,58 @@ export default async function AdminDashboardPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
+        {/* Recent Projects Card */}
         <Card>
           <CardHeader>
             <CardTitle>Recent Projects</CardTitle>
-            <CardDescription>Your latest portfolio projects</CardDescription>
+            <CardDescription>Latest work added to portfolio</CardDescription>
           </CardHeader>
           <CardContent>
             {projectsResult.data && projectsResult.data.length > 0 ? (
               <div className="space-y-4">
                 {projectsResult.data.slice(0, 5).map((project) => (
-                  <div
-                    key={project.id}
-                    className="flex items-center justify-between"
-                  >
+                  <div key={project.id} className="flex items-center justify-between border-b pb-2 last:border-0">
                     <div className="space-y-1">
-                      <p className="text-sm font-medium leading-none">
-                        {project.title}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {project.category}
-                      </p>
+                      <p className="text-sm font-medium">{project.title}</p>
+                      <p className="text-xs text-muted-foreground">{project.category}</p>
                     </div>
-                    {project.featured && (
-                      <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
-                        Featured
+                    {project.published && (
+                      <span className="text-[10px] bg-blue-500/10 text-blue-600 px-2 py-0.5 rounded-full font-medium">
+                        Live
                       </span>
                     )}
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">No projects yet</p>
+              <p className="text-sm text-muted-foreground">No projects found.</p>
             )}
           </CardContent>
         </Card>
 
+        {/* Social Links Overview Card */}
         <Card>
           <CardHeader>
-            <CardTitle>Recent Blog Posts</CardTitle>
-            <CardDescription>Your latest articles</CardDescription>
+            <CardTitle>Connected Platforms</CardTitle>
+            <CardDescription>Manage your social media visibility</CardDescription>
           </CardHeader>
           <CardContent>
-            {blogsResult.data && blogsResult.data.length > 0 ? (
+            {socialResult.data && socialResult.data.length > 0 ? (
               <div className="space-y-4">
-                {blogsResult.data.slice(0, 5).map((blog) => (
-                  <div
-                    key={blog.id}
-                    className="flex items-center justify-between"
-                  >
+                {socialResult.data.slice(0, 5).map((link) => (
+                  <div key={link.id} className="flex items-center justify-between border-b pb-2 last:border-0">
                     <div className="space-y-1">
-                      <p className="text-sm font-medium leading-none">
-                        {blog.title}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {blog.category}
-                      </p>
+                      <p className="text-sm font-medium">{link.platform}</p>
+                      <p className="text-xs text-muted-foreground truncate max-w-[150px]">{link.url}</p>
                     </div>
-                    {blog.published ? (
-                      <span className="text-xs bg-green-500/10 text-green-600 dark:text-green-400 px-2 py-1 rounded-full">
-                        Published
-                      </span>
-                    ) : (
-                      <span className="text-xs bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 px-2 py-1 rounded-full">
-                        Draft
-                      </span>
-                    )}
+                    <Link href="/admin/links-manage" className="text-[10px] text-blue-500 hover:underline">
+                      Edit
+                    </Link>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">No blog posts yet</p>
+              <p className="text-sm text-muted-foreground">No social links added.</p>
             )}
           </CardContent>
         </Card>

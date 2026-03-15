@@ -72,11 +72,34 @@ export function ProjectsTable({ initialProjects }: { initialProjects: Project[] 
   const [deletingProject, setDeletingProject] = useState<Project | null>(null)
   const [formData, setFormData] = useState<ProjectFormData>(defaultFormData)
   const [isLoading, setIsLoading] = useState(false)
+  const [imageFile, setImageFile] = useState<File | null>(null)
+
   const router = useRouter()
+
+  // --- Image Upload Logic ---
+  const uploadImage = async (file: File) => {
+    const supabase = createClient()
+    // File name unique banane ke liye timestamp use kiya hai
+    const fileExt = file.name.split('.').pop()
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`
+
+    const { error: uploadError } = await supabase.storage
+      .from('project-images') // Make sure this bucket exists in Supabase
+      .upload(fileName, file)
+
+    if (uploadError) throw uploadError
+
+    const { data } = supabase.storage
+      .from('project-images')
+      .getPublicUrl(fileName)
+
+    return data.publicUrl
+  }
 
   const openCreateDialog = () => {
     setEditingProject(null)
     setFormData(defaultFormData)
+    setImageFile(null)
     setIsDialogOpen(true)
   }
 
@@ -93,6 +116,7 @@ export function ProjectsTable({ initialProjects }: { initialProjects: Project[] 
       featured: project.published,
       display_order: project.display_order,
     })
+    setImageFile(null)
     setIsDialogOpen(true)
   }
 
@@ -106,22 +130,30 @@ export function ProjectsTable({ initialProjects }: { initialProjects: Project[] 
     setIsLoading(true)
 
     const supabase = createClient()
-    const projectData = {
-      title: formData.title,
-      description: formData.description,
-      image_url: formData.image_url || null,
-      live_url: formData.project_url || null,
-      github_url: formData.github_url || null,
-      category: formData.category,
-      technologies: formData.technologies
-        .split(',')
-        .map((t) => t.trim())
-        .filter(Boolean),
-      published: formData.featured,
-      display_order: formData.display_order,
-    }
 
     try {
+      let finalImageUrl = formData.image_url
+
+      // Agar user ne file select ki hai, toh pehle upload karo
+      if (imageFile) {
+        finalImageUrl = await uploadImage(imageFile)
+      }
+
+      const projectData = {
+        title: formData.title,
+        description: formData.description,
+        image_url: finalImageUrl || null,
+        live_url: formData.project_url || null,
+        github_url: formData.github_url || null,
+        category: formData.category,
+        technologies: formData.technologies
+          .split(',')
+          .map((t) => t.trim())
+          .filter(Boolean),
+        published: formData.featured,
+        display_order: formData.display_order,
+      }
+
       if (editingProject) {
         const { data, error } = await supabase
           .from('projects')
@@ -147,6 +179,7 @@ export function ProjectsTable({ initialProjects }: { initialProjects: Project[] 
       router.refresh()
     } catch (error) {
       console.error('Error saving project:', error)
+      alert('Error saving project. Check console for details.')
     } finally {
       setIsLoading(false)
     }
@@ -247,10 +280,10 @@ export function ProjectsTable({ initialProjects }: { initialProjects: Project[] 
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">
-                      <Button variant="ghost" size="icon-sm" onClick={() => openEditDialog(project)}>
+                      <Button variant="ghost" size="icon" onClick={() => openEditDialog(project)}>
                         <Pencil className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon-sm" onClick={() => openDeleteDialog(project)}>
+                      <Button variant="ghost" size="icon" onClick={() => openDeleteDialog(project)}>
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
                     </div>
@@ -270,6 +303,7 @@ export function ProjectsTable({ initialProjects }: { initialProjects: Project[] 
               {editingProject ? 'Update your project details' : 'Add a new project to your portfolio'}
             </DialogDescription>
           </DialogHeader>
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
@@ -287,11 +321,12 @@ export function ProjectsTable({ initialProjects }: { initialProjects: Project[] 
                   id="category"
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  placeholder="e.g., Web App, Mobile App"
+                  placeholder="e.g., Web App"
                   required
                 />
               </div>
             </div>
+
             <div className="space-y-2">
               <Label htmlFor="description">Description</Label>
               <Textarea
@@ -301,15 +336,38 @@ export function ProjectsTable({ initialProjects }: { initialProjects: Project[] 
                 required
               />
             </div>
+
             <div className="space-y-2">
               <Label htmlFor="technologies">Technologies</Label>
               <Input
                 id="technologies"
                 value={formData.technologies}
                 onChange={(e) => setFormData({ ...formData, technologies: e.target.value })}
-                placeholder="React, TypeScript, Tailwind (comma separated)"
+                placeholder="React, TypeScript (comma separated)"
               />
             </div>
+
+            {/* IMAGE FIELD UPDATED */}
+            <div className="space-y-2 border p-3 rounded-lg bg-muted/30">
+              <Label>Project Image</Label>
+              <Input
+                type="file"
+                accept="image/*"
+                className="cursor-pointer"
+                onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+              />
+              <div className="text-center text-[10px] font-bold text-muted-foreground my-1">OR</div>
+              <Input
+                type="url"
+                placeholder="Paste image URL (if not uploading)"
+                value={formData.image_url}
+                onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+              />
+              { (imageFile || formData.image_url) && (
+                 <p className="text-[10px] text-green-600">✓ Image source selected</p>
+              )}
+            </div>
+
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="project_url">Project URL</Label>
@@ -332,16 +390,7 @@ export function ProjectsTable({ initialProjects }: { initialProjects: Project[] 
                 />
               </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="image_url">Image URL</Label>
-              <Input
-                id="image_url"
-                type="url"
-                value={formData.image_url}
-                onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                placeholder="https://..."
-              />
-            </div>
+
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="display_order">Display Order</Label>
@@ -360,9 +409,10 @@ export function ProjectsTable({ initialProjects }: { initialProjects: Project[] 
                   checked={formData.featured}
                   onCheckedChange={(checked) => setFormData({ ...formData, featured: checked })}
                 />
-                <Label htmlFor="featured">Featured on homepage</Label>
+                <Label htmlFor="featured" className="cursor-pointer">Featured</Label>
               </div>
             </div>
+
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                 Cancel
@@ -375,12 +425,13 @@ export function ProjectsTable({ initialProjects }: { initialProjects: Project[] 
         </DialogContent>
       </Dialog>
 
+      {/* Delete Dialog remains same */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Delete Project</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete &quot;{deletingProject?.title}&quot;? This action cannot be undone.
+              Are you sure you want to delete "{deletingProject?.title}"? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

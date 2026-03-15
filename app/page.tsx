@@ -1,4 +1,3 @@
-// app/page.tsx
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 
 import { Navbar } from "@/components/portfolio/navbar";
@@ -10,89 +9,50 @@ import { Writing, type BlogPost } from "@/components/portfolio/writing";
 import { ContactSection } from "@/components/portfolio/contact-form";
 import { Footer } from "@/components/portfolio/footer";
 
-// Define types (match your Supabase tables)
-type AboutData = {
-  bio?: string;
-  years_experience?: number;
-  projects_shipped?: number;
-  location?: string;
-  what_i_do?: { point: string }[]; // jsonb array
-};
+// 1. CACHE KILLER: Iske bina Admin mein update karne par frontend change nahi hoga
+export const revalidate = 0; 
 
 export default async function HomePage() {
   const supabase = await createSupabaseServerClient();
 
-  // Fetch data in parallel (fastest)
+  // Fetch data in parallel
   const [
-    { data: projects, error: projectsError },
-    { data: blogs, error: blogsError },
-    { data: about, error: aboutError },
-    { data: socialLinks, error: socialError },
+    { data: projects },
+    { data: blogs },
+    { data: about },
+    { data: socialLinks }, // Yeh variable fetch kar rahe hain
   ] = await Promise.all([
-    supabase
-      .from('projects')
-      .select('*')
-      .eq('published', true)
-      .order('created_at', { ascending: false })
-      .limit(6), // recent ya featured projects
-
-    supabase
-      .from('blogs')
-      .select('*')
-      .eq('published', true)
-      .order('date', { ascending: false })
-      .limit(4),
-
-    supabase
-      .from('about')
-      .select('*')
-      .maybeSingle(), // single row expected, .single() error deta agar 0/ >1 rows
-
-    supabase
-      .from('social_links')
-      .select('*')
-      .maybeSingle(),
+    supabase.from('projects').select('*').eq('published', true).order('display_order'),
+    supabase.from('blogs').select('*').eq('published', true).order('date', { ascending: false }),
+    supabase.from('about').select('*').maybeSingle(),
+    
+    // FIX 1: .maybeSingle() HATA DIYA. Humein pura array chahiye (github, insta, etc.)
+    supabase.from('social_links').select('*').order('display_order', { ascending: true }),
   ]);
 
-  // Optional: error logging (production mein Sentry ya console.error kar sakte ho)
-  // if (projectsError || blogsError || aboutError || socialError) {
-  //   console.error('Supabase fetch error:', { projectsError, blogsError, aboutError, socialError });
-  // }
-  if (projectsError || blogsError || aboutError || socialError) {
-    // Detailed logging
-    const logError = (label: string, error: any) => {
-      if (!error) return;
-      console.error(`Error in ${label}:`);
-      if (error.message) console.error('Message:', error.message);
-      if (error.code) console.error('Code:', error.code);
-      if (error.details) console.error('Details:', error.details);
-      if (error.hint) console.error('Hint:', error.hint);
-      console.error('Full error object:', error);
-    }
-
-    logError('Projects', projectsError);
-    logError('Blogs', blogsError);
-    logError('About', aboutError);
-    logError('Social', socialError);
-  }
-
-  // Fallback to empty arrays/objects if no data or error
-  const safeProjects = (projects || []) as Project[];
-  const safeBlogs = (blogs || []) as BlogPost[];
-  const safeAbout = (about || {}) as AboutData;
-  const safeSocial = socialLinks || {};
+  // Fallback to empty arrays
+  const safeProjects = projects || [];
+  const safeBlogs = blogs || [];
+  const safeSocial = socialLinks || []; // Yeh ab ek array hai [{}, {}]
 
   return (
     <main className="min-h-screen bg-background">
       <Navbar />
-      <Hero />
-      {/* @ts-expect-error: About expects props, but IntrinsicAttributes type issue. */}
-      <About about={safeAbout as AboutProps['about']} /> {/* Pass bio, stats, what_i_do etc. */}
-      <TechStack /> {/* Agar static hai toh unchanged, warna alag fetch */}
+
+      {/* FIX 2: Hero ko links pass karna bhool gaye the */}
+      <Hero links={safeSocial} />
+
+      <About about={about || {}} />
+      
+      <TechStack />
+      
       <Projects projects={safeProjects} />
+      
       <Writing blogs={safeBlogs} />
-      {/* @ts-expect-error: ContactSection expects props, but IntrinsicAttributes type issue. */}
-      <ContactSection socialLinks={safeSocial as any} /> {/* email, github etc. */}
+
+      {/* FIX 3: ContactSection ko 'links' prop bhejiye (Prop name matching) */}
+      <ContactSection links={safeSocial} /> 
+
       <Footer />
     </main>
   );

@@ -5,7 +5,12 @@ import { ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { SocialLinks } from "@/components/portfolio/SocialLinks"
 
-export function Hero() {
+// 1. Types define karein taaki data correctly receive ho
+interface HeroProps {
+  links?: any[]; 
+}
+
+export function Hero({ links = [] }: HeroProps) { // 2. Links ko as a Prop liya
   return (
     <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto">
@@ -17,7 +22,6 @@ export function Hero() {
             transition={{ duration: 0.6 }}
             className="space-y-6"
           >
-            {/* Badge */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -28,7 +32,6 @@ export function Hero() {
               </span>
             </motion.div>
 
-            {/* Heading */}
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -38,42 +41,43 @@ export function Hero() {
               Hi, I'm <span className="text-blue-500">Dev</span>
             </motion.h1>
 
-            {/* Subtitle */}
             <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
               className="text-lg text-muted-foreground max-w-xl leading-relaxed"
             >
-              full-stack developer passionate about crafting clean, premium, and high-performance digital experiences that blend creativity with code. I thrive on building solutions that are not just functional, but also elegant and impactful.
+              Full-stack developer passionate about crafting clean, premium, and high-performance digital experiences.
             </motion.p>
 
-            {/* Buttons */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
               className="flex flex-wrap gap-4"
             >
-              <a href="#projects">
-                <Button className="bg-blue-500 hover:bg-blue-600 text-white rounded-full px-6 h-11">
-                  View Projects
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </a>
-              <a href="#contact">
-                <Button variant="outline" className="rounded-full px-6 h-11 border-border">
-                  Contact Me
-                </Button>
-              </a>
+              <div className="flex flex-wrap gap-4 w-full">
+                <a href="#projects">
+                  <Button className="bg-blue-500 hover:bg-blue-600 text-white rounded-full px-6 h-11">
+                    View Projects
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </a>
+                <a href="#contact">
+                  <Button variant="outline" className="rounded-full px-6 h-11 border-border">
+                    Contact Me
+                  </Button>
+                </a>
+              </div>
+
+              {/* 3. SocialLinks ko yahan links pass kiye */}
               <div className="flex gap-4 mt-4">
-                <SocialLinks />
+                <SocialLinks links={links} />
               </div>
             </motion.div>
           </motion.div>
 
-          {/* Right Content - Avatar Illustration */}
-          {/* Right Content - Avatar Photo */}
+          {/* Right Content - Photo */}
           <motion.div
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
@@ -81,14 +85,10 @@ export function Hero() {
             className="flex justify-center lg:justify-end"
           >
             <div className="relative w-72 h-72 sm:w-80 sm:h-80 lg:w-96 lg:h-96">
-              {/* Flash/beam background */}
               <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-400/30 via-purple-400/20 to-pink-400/30 animate-pulse blur-3xl"></div>
-              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-white/10 dark:from-black/20"></div>
-
-              {/* Your circular photo */}
               <div className="relative w-full h-full rounded-full overflow-hidden border-4 border-blue-500/30 dark:border-blue-300/30">
                 <img
-                  src="\a.jpg" // <-- replace with your photo path
+                  src="/a.jpg" 
                   alt="Dev"
                   className="w-full h-full object-cover"
                 />
