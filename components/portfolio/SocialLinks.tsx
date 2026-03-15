@@ -5,11 +5,11 @@ import { useState } from "react"
 import { Github, Linkedin, Twitter, Instagram, Youtube, Link as LinkIcon } from "lucide-react"
 
 const platformConfig: Record<string, { icon: any, color: string, defaultUrl: string }> = {
-  github: { icon: Github, color: "bg-gray-800", defaultUrl: "https://github.com" },
-  linkedin: { icon: Linkedin, color: "bg-blue-600", defaultUrl: "https://linkedin.com" },
-  x: { icon: Twitter, color: "bg-black", defaultUrl: "https://x.com" },
-  instagram: { icon: Instagram, color: "bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600", defaultUrl: "https://instagram.com" },
-  youtube: { icon: Youtube, color: "bg-red-600", defaultUrl: "https://youtube.com" },
+  github: { icon: Github, color: "bg-gray-800", defaultUrl: "https://github.com/ankit-kuntal" },
+  linkedin: { icon: Linkedin, color: "bg-blue-600", defaultUrl: "https://www.linkedin.com/in/ankit-kuntal-675276358/" },
+  x: { icon: Twitter, color: "bg-black", defaultUrl: "https://x.com/_Srshrm_" },
+  instagram: { icon: Instagram, color: "bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600", defaultUrl: "https://www.instagram.com/cmplx.dev/" },
+  youtube: { icon: Youtube, color: "bg-red-600", defaultUrl: "https://www.youtube.com/@devexplrer" },
 }
 
 export function SocialLinks({ links = [] }: { links?: any[] }) {
