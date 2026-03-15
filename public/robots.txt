@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://ankit-kuntal-bt.vercel.app
+
+# Sitemaps
+Sitemap: https://ankit-kuntal-bt.vercel.app/sitemap.xml
