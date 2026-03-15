@@ -66,28 +66,6 @@ export function ContactSection({ links = [], resumeUrl }: ContactSectionProps) {
                     Let's build something great together.
                   </h2>
 
-                  <div className="flex gap-3 pt-2 flex-wrap">
-                    {/* Resume Button */}
-                    {resumeUrl && (
-                      <a
-                        href={resumeUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="bg-white text-blue-500 px-4 py-2 rounded-full text-sm font-medium hover:bg-white/90 transition"
-                      >
-                        View Resume
-                      </a>
-                    )}
-
-                    {/* Certificates Button */}
-                    <a
-                      href="/certificates"
-                      className="border border-white text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-white/10 transition"
-                    >
-                      Certificates
-                    </a>
-                  </div>
-
                   <div className="space-y-4">
                     <a
                       href="mailto:ankitkuntal904@gmail.com"
