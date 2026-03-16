@@ -1,0 +1,49 @@
+name: Node.js + Webpack CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]   # you can drop 18.x if you no longer support it
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        id: setup-node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'               # ← caches node_modules automatically!
+
+      - name: Install dependencies
+        run: npm ci                  # ← faster & more reliable than npm install
+
+      - name: Build with Webpack
+        run: npx webpack --mode=production   # add --mode=production if you want optimized build
+
+      # Optional but very strongly recommended additions:
+
+      - name: Lint code              # if you have eslint
+        run: npm run lint
+
+      - name: Run tests              # if you have jest/mocha/vitest/...
+        run: npm test
+
+      # Optional: upload built files so you can download them from the Actions tab
+      - name: Upload build artifacts
+        if: matrix.node-version == '22.x'   # upload only once (latest version)
+        uses: actions/upload-artifact@v4
+        with:
+          name: webpack-build
+          path: dist/                  # ← change to your output folder
+          retention-days: 7
